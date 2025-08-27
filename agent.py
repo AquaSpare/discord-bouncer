@@ -1,20 +1,18 @@
-import os
 from enum import Enum
 
-from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.azure import AzureProvider
 
-load_dotenv()
+from settings import settings
 
 model = OpenAIModel(
     "gpt-5-nano",
     provider=AzureProvider(
         azure_endpoint="https://agentsplayground.cognitiveservices.azure.com/",
         api_version="2024-12-01-preview",
-        api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+        api_key=settings.AZURE_OPENAI_API_KEY,
     ),
 )
 

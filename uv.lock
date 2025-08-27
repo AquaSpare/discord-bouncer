@@ -22,7 +22,6 @@ dependencies = [
     { name = "discord-py" },
     { name = "pydantic-ai" },
     { name = "pydantic-settings" },
-    { name = "python-dotenv" },
 ]
 
 [package.metadata]
@@ -30,7 +29,6 @@ requires-dist = [
     { name = "discord-py", specifier = ">=2.6.0" },
     { name = "pydantic-ai", specifier = ">=0.7.4" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "python-dotenv", specifier = ">=1.1.1" },
 ]
 
 [[package]]
