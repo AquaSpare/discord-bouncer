@@ -4,12 +4,12 @@ from discord import Message
 from discord.ext import commands
 
 from agent import Desicion, agent
-from database import InMemoryHistoryDB
+from database import SQLiteHistoryDB
 from settings import settings
 
 
 class GatekeeperCog(commands.Cog):
-    def __init__(self, bot: commands.Bot, db: InMemoryHistoryDB):
+    def __init__(self, bot: commands.Bot, db: SQLiteHistoryDB):
         self.bot = bot
         self.db = db
 
@@ -103,7 +103,7 @@ async def main():
     bot = commands.Bot(command_prefix="!", intents=intents)
 
     # Create DB and inject into Cog
-    db = await InMemoryHistoryDB.open()
+    db = await SQLiteHistoryDB.open()
     await bot.add_cog(GatekeeperCog(bot, db))
 
     try:

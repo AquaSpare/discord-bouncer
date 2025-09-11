@@ -201,3 +201,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# SQLite database files
+*.sqlite
+*.sqlite3
+*.db
+
+# SQLite Write-Ahead Logging and shared memory files
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
