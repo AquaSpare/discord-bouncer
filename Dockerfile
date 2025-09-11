@@ -22,5 +22,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT []
 
-# Run your Discord bot
 CMD ["python", "bot.py"]
