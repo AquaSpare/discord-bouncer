@@ -1,101 +1,118 @@
-# This example requires the 'message_content' intent.
-
-
+# bot.py
 import discord
 from discord import Message
+from discord.ext import commands
 
 from agent import Desicion, agent
+from database import InMemoryHistoryDB
 from settings import settings
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True  # Needed to move members
 
-client = discord.Client(intents=intents)
+class GatekeeperCog(commands.Cog):
+    def __init__(self, bot: commands.Bot, db: InMemoryHistoryDB):
+        self.bot = bot
+        self.db = db
 
-user_histories = {}
-blacklist = []
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"We have logged in as {self.bot.user}")
+        channel = self.bot.get_channel(settings.DISCORD_ANNOUNCE_CHANNEL_ID)
+        if channel and hasattr(channel, "send"):
+            await channel.send(
+                "The bar is now open! Enter the queue and message me to request entry."
+            )
+        elif channel:
+            print(
+                f"Channel with ID {settings.DISCORD_ANNOUNCE_CHANNEL_ID} is not a text channel or thread."
+            )
+        else:
+            print(f"Channel with ID {settings.DISCORD_ANNOUNCE_CHANNEL_ID} not found.")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: Message):
+        if message.author.bot:
+            return
+        if not isinstance(message.channel, discord.DMChannel):
+            return
+
+        guild = self.bot.get_guild(settings.DISCORD_GUILD_ID)
+        if not guild:
+            return await message.channel.send("Server not found.")
+
+        member = guild.get_member(message.author.id)
+        if not member:
+            return await message.channel.send("Could not find you in the server.")
+
+        queue_channel = guild.get_channel(settings.DISCORD_QUEUE_CHANNEL_ID)
+        bar_channel = guild.get_channel(settings.DISCORD_VOICE_CHANNEL_ID)
+
+        if not (queue_channel and isinstance(queue_channel, discord.VoiceChannel)):
+            return await message.channel.send("Queue voice channel not found.")
+        if not (bar_channel and isinstance(bar_channel, discord.VoiceChannel)):
+            return await message.channel.send("Bar voice channel not found.")
+
+        user_key = str(message.author.id)
+
+        # Check blacklist from DB
+        if await self.db.is_blacklisted(user_key):
+            return await message.channel.send(
+                "Sorry you ain't getting in today mate, go home and get some sleep"
+            )
+
+        # Ensure user is in the queue VC
+        if not (
+            member.voice
+            and member.voice.channel
+            and member.voice.channel.id == queue_channel.id
+        ):
+            return await message.channel.send(
+                f"Please join the queue voice channel first: {queue_channel.name}"
+            )
+
+        try:
+            # Load history for this user
+            history = await self.db.get_messages(user_key)
+
+            # Run agent with history
+            result = await agent.run(message.content, message_history=history)
+
+            print(result)
+
+            # Save the new messages (append-only row)
+            await self.db.add_messages(user_key, result.new_messages_json())
+
+            # Act on decision
+            match result.output.desicion:
+                case Desicion.let_in:
+                    await member.move_to(bar_channel)
+                case Desicion.dont_let_in:
+                    await self.db.set_blacklisted(user_key, True)
+
+            # Respond with agent text
+            await message.channel.send(result.output.response)
+
+        except Exception as e:
+            await message.channel.send(f"Could not move you to the voice channel: {e}")
 
 
-@client.event
-async def on_ready():
-    print(f"We have logged in as {client.user}")
-    channel = client.get_channel(settings.DISCORD_ANNOUNCE_CHANNEL_ID)
-    if channel and hasattr(channel, "send"):
-        await channel.send(
-            "The bar is now open! Enter the queue and message me to request entry."
-        )
-    elif channel:
-        print(
-            f"Channel with ID {settings.DISCORD_ANNOUNCE_CHANNEL_ID} is not a text channel or thread."
-        )
-    else:
-        print(f"Channel with ID {settings.DISCORD_ANNOUNCE_CHANNEL_ID} not found.")
+async def main():
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.members = True
 
+    bot = commands.Bot(command_prefix="!", intents=intents)
 
-@client.event
-async def on_message(message: Message):
-    # Ignore messages from the bot itself
-    if message.author == client.user:
-        return
+    # Create DB and inject into Cog
+    db = await InMemoryHistoryDB.open()
+    await bot.add_cog(GatekeeperCog(bot, db))
 
-    # Only handle private messages (DMs)
-    if not isinstance(message.channel, discord.DMChannel):
-        return
-
-    user_id = message.author.id
-    guild = client.get_guild(settings.DISCORD_GUILD_ID)
-    if not guild:
-        await message.channel.send("Server not found.")
-        return
-
-    member = guild.get_member(user_id)
-    if not member:
-        await message.channel.send("Could not find you in the server.")
-        return
-
-    queue_channel = guild.get_channel(settings.DISCORD_QUEUE_CHANNEL_ID)
-    bar_channel = guild.get_channel(settings.DISCORD_VOICE_CHANNEL_ID)
-
-    if not (queue_channel and isinstance(queue_channel, discord.VoiceChannel)):
-        await message.channel.send("Queue voice channel not found.")
-        return
-    if not (bar_channel and isinstance(bar_channel, discord.VoiceChannel)):
-        await message.channel.send("Bar voice channel not found.")
-        return
-
-    if user_id in blacklist:
-        return await message.channel.send(
-            "Sorry you aint getting in today mate, go home and get some sleep"
-        )
-
-    # Check if user is in the queue channel
-    if not (
-        member.voice
-        and member.voice.channel
-        and member.voice.channel.id == queue_channel.id
-    ):
-        await message.channel.send(
-            f"Please join the queue voice channel first: {queue_channel.name}"
-        )
-        return
-
-    # Move user to bar channel
     try:
-        result = await agent.run(
-            message.content, message_history=user_histories.get(user_id)
-        )
-        user_histories[user_id] = result.all_messages()
-
-        match result.output.desicion:
-            case Desicion.let_in:
-                await member.move_to(bar_channel)
-            case Desicion.dont_let_in:
-                blacklist.append(user_id)
-
-        await message.channel.send(result.output.response)
-    except Exception as e:
-        await message.channel.send(f"Could not move you to the voice channel: {e}")
+        await bot.start(settings.DISCORD_API_KEY)
+    finally:
+        await db.close()
 
 
-client.run(settings.DISCORD_API_KEY)
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())
