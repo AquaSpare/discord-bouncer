@@ -5,7 +5,7 @@ from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.azure import AzureProvider
 
-from settings import settings
+from mybot.settings import settings
 
 model = OpenAIModel(
     "gpt-5-nano",

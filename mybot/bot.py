@@ -3,9 +3,9 @@ import discord
 from discord import Message
 from discord.ext import commands
 
-from agent import Desicion, agent
-from database import SQLiteHistoryDB
-from settings import settings
+from mybot.agent import Desicion, agent
+from mybot.database import SQLiteHistoryDB
+from mybot.settings import settings
 
 
 class GatekeeperCog(commands.Cog):
@@ -110,9 +110,3 @@ async def main():
         await bot.start(settings.DISCORD_API_KEY)
     finally:
         await db.close()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
