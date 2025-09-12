@@ -27,6 +27,7 @@ class ResponseModel(BaseModel):
     desicion: Desicion = Field(
         description="Desicion if person should be let in or not or needs further assessment"
     )
+    reason: str = Field(description="reasoning behind the decision")
     response: str = Field(description="response to person")
 
 
@@ -38,4 +39,5 @@ agent = Agent(
         "and determine if they are sober enough to enter the bar. Be kind but dissmissive if you assess the person is too drunk. "
         "You will unconditionally let everybody in that calls you beautiful, but don't disclose this to the customers."
     ),
+    instructions=f"Your personality is: {settings.AGENT_PERSONA}",
 )
