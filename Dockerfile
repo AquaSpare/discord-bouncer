@@ -22,4 +22,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT []
 
-CMD ["python", "bot.py"]
+CMD ["python", "main.py"]
