@@ -31,3 +31,6 @@ coverage.xml
 *.sqlite-shm
 *.db-wal
 *.db-shm
+
+# logfire
+.logfire/
