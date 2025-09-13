@@ -21,7 +21,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "aiosqlite" },
     { name = "discord-py" },
-    { name = "logfire" },
+    { name = "logfire", extra = ["aiohttp-client", "sqlite3"] },
     { name = "pydantic-ai" },
     { name = "pydantic-settings" },
 ]
@@ -30,7 +30,7 @@ dependencies = [
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.21.0" },
     { name = "discord-py", specifier = ">=2.6.0" },
-    { name = "logfire", specifier = ">=4.7.0" },
+    { name = "logfire", extras = ["aiohttp-client", "sqlite3"], specifier = ">=4.7.0" },
     { name = "pydantic-ai", specifier = ">=0.7.4" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
 ]
@@ -746,6 +746,14 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/cd/66/01e8b2cff6a90daf579b4efee653544e3ba719b8b555b8937348c3e79e83/logfire-4.7.0-py3-none-any.whl", hash = "sha256:7f451648a5532249223ea0f886c1b0295cdfa7bd1336824803cf7415cd9f04d8", size = 219841, upload-time = "2025-09-12T15:18:45.322Z" },
 ]
 
+[package.optional-dependencies]
+aiohttp-client = [
+    { name = "opentelemetry-instrumentation-aiohttp-client" },
+]
+sqlite3 = [
+    { name = "opentelemetry-instrumentation-sqlite3" },
+]
+
 [[package]]
 name = "logfire-api"
 version = "4.3.4"
@@ -951,6 +959,51 @@ wheels = [
 ]
 
 [[package]]
+name = "opentelemetry-instrumentation-aiohttp-client"
+version = "0.58b0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "opentelemetry-util-http" },
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4a/5d/de936b63cde9fba615ca0a3b1e1d2a986a400fe53890f52760df0955596e/opentelemetry_instrumentation_aiohttp_client-0.58b0.tar.gz", hash = "sha256:aab610f90a1be67ae66d3781bcad2b484774f043f73e8519156ca04d05019b2a", size = 15039, upload-time = "2025-09-11T11:42:15.502Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/67/2d/0fe2d0c4af6d23bf51dea5b2324fe06a91ec0b4e82a1ebbc4cbf3a8e1067/opentelemetry_instrumentation_aiohttp_client-0.58b0-py3-none-any.whl", hash = "sha256:14b805bd3da73579bb8484f798800af15bc8218dd775275c207cdf5b8abae586", size = 12377, upload-time = "2025-09-11T11:41:03.021Z" },
+]
+
+[[package]]
+name = "opentelemetry-instrumentation-dbapi"
+version = "0.58b0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e5/8b/bf6c72d54f77eb0e4445e3b0415e69b3ea5fa40b9372c586db91ffc59b17/opentelemetry_instrumentation_dbapi-0.58b0.tar.gz", hash = "sha256:34ca7e7bf942d5ebf1ea3838e34154b3900bd00d17115a99b83c4ee280e658ac", size = 14223, upload-time = "2025-09-11T11:42:30.771Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/18/bf51a3913da9659d17aa1f44860bcc5d721ddcdcdbfbca80b596139d8811/opentelemetry_instrumentation_dbapi-0.58b0-py3-none-any.whl", hash = "sha256:49283687dfc47f05484d4b186fecca8a96b70e18fd406e34c13eb5f09eabb67c", size = 12522, upload-time = "2025-09-11T11:41:23.665Z" },
+]
+
+[[package]]
+name = "opentelemetry-instrumentation-sqlite3"
+version = "0.58b0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-instrumentation-dbapi" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ae/99/797b3ed47fbc7c384ef3cb9ede13d03282d60a0b8fdf092f41ebdb85d75d/opentelemetry_instrumentation_sqlite3-0.58b0.tar.gz", hash = "sha256:b192fc3cd2fbc0d7dfbf47a1324e5e85e73405e94c7929973d48e7233b1e1ff0", size = 7923, upload-time = "2025-09-11T11:42:52.758Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f7/0a/49d33173c016bf5464b13af3246744c9a77b3621381e66bba8d9d6435a89/opentelemetry_instrumentation_sqlite3-0.58b0-py3-none-any.whl", hash = "sha256:daa3d3e19b0279df27d8bd4416ee2f1f1f46e7481c91d169f3f507565ddaed2c", size = 9339, upload-time = "2025-09-11T11:41:55.003Z" },
+]
+
+[[package]]
 name = "opentelemetry-proto"
 version = "1.37.0"
 source = { registry = "https://pypi.org/simple" }
@@ -987,6 +1040,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/aa/1b/90701d91e6300d9f2fb352153fb1721ed99ed1f6ea14fa992c756016e63a/opentelemetry_semantic_conventions-0.58b0.tar.gz", hash = "sha256:6bd46f51264279c433755767bb44ad00f1c9e2367e1b42af563372c5a6fa0c25", size = 129867, upload-time = "2025-09-11T10:29:12.597Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/90/68152b7465f50285d3ce2481b3aec2f82822e3f52e5152eeeaf516bab841/opentelemetry_semantic_conventions-0.58b0-py3-none-any.whl", hash = "sha256:5564905ab1458b96684db1340232729fce3b5375a06e140e8904c78e4f815b28", size = 207954, upload-time = "2025-09-11T10:28:59.218Z" },
+]
+
+[[package]]
+name = "opentelemetry-util-http"
+version = "0.58b0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/5f/02f31530faf50ef8a41ab34901c05cbbf8e9d76963ba2fb852b0b4065f4e/opentelemetry_util_http-0.58b0.tar.gz", hash = "sha256:de0154896c3472c6599311c83e0ecee856c4da1b17808d39fdc5cce5312e4d89", size = 9411, upload-time = "2025-09-11T11:43:05.602Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a5/a3/0a1430c42c6d34d8372a16c104e7408028f0c30270d8f3eb6cccf2e82934/opentelemetry_util_http-0.58b0-py3-none-any.whl", hash = "sha256:6c6b86762ed43025fbd593dc5f700ba0aa3e09711aedc36fd48a13b23d8cb1e7", size = 7652, upload-time = "2025-09-11T11:42:09.682Z" },
 ]
 
 [[package]]
