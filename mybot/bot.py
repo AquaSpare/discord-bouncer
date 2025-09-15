@@ -2,8 +2,9 @@
 import discord
 from discord import Message
 from discord.ext import commands
+from pydantic_ai import ImageUrl
 
-from mybot.agent import Desicion, agent
+from mybot.agent import Desicion, DiscordMetadata, agent
 from mybot.database import SQLiteHistoryDB
 from mybot.settings import settings
 
@@ -40,6 +41,10 @@ class GatekeeperCog(commands.Cog):
             return await message.channel.send("Server not found.")
 
         member = guild.get_member(message.author.id)
+
+        print(member.display_avatar)
+        print(member.display_name)
+
         if not member:
             return await message.channel.send("Could not find you in the server.")
 
@@ -74,9 +79,11 @@ class GatekeeperCog(commands.Cog):
             history = await self.db.get_messages(user_key)
 
             # Run agent with history
-            result = await agent.run(message.content, message_history=history)
-
-            print(result)
+            result = await agent.run(
+                [message.content, ImageUrl(member.display_avatar.url)],
+                message_history=history,
+                deps=DiscordMetadata(discord_username=member.display_name),
+            )
 
             # Save the new messages (append-only row)
             await self.db.add_messages(user_key, result.new_messages_json())

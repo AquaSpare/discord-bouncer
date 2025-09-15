@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DISCORD_QUEUE_CHANNEL_ID: int
     DISCORD_VOICE_CHANNEL_ID: int
     AGENT_PERSONA: str = "strict"
+    LOGFIRE_TOKEN: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
